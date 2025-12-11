@@ -10,6 +10,7 @@ import com.expensetracker.repository.UserRepository;
 import com.expensetracker.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +20,7 @@ public class UserServiceImpl implements IUserService {
 
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDTO signUp(UserRequestDTO userDTO) {
@@ -29,10 +31,11 @@ public class UserServiceImpl implements IUserService {
     log.info("Creating user: {}.",userDTO.getEmail());
 
     User user = UserMapper.toUser(userDTO);
+    user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
     User savedUser = userRepository.save(user);
     log.info("User: {} created.",savedUser.getEmail());
-    return UserMapper.toUserResposeDTO(savedUser);
+    return UserMapper.toUserResponseDTO(savedUser);
 
     }
 }
