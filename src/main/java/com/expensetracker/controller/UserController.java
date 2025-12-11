@@ -6,6 +6,7 @@ import com.expensetracker.model.UserResponseDTO;
 import com.expensetracker.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class UserController {
     @Operation(summary = "Sign up")
     public ResponseEntity<UserResponseDTO> signUp(@Validated @RequestBody UserRequestDTO userDTO){
 
-    return ResponseEntity.ok().body(userService.signUp(userDTO));
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.signUp(userDTO));
 
     }
 
