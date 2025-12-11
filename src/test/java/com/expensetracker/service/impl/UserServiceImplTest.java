@@ -24,6 +24,9 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -42,13 +45,14 @@ class UserServiceImplTest {
         savedUser.setId(1L);
         savedUser.setUsername("testuser");
         savedUser.setEmail("test@example.com");
-        savedUser.setPassword(new BCryptPasswordEncoder().encode("password123"));
+        savedUser.setPassword("$2a$10$hashedPassword");
     }
 
     @Test
     void signUp_WithValidData_ShouldCreateUser() {
         // Arrange
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         // Act
@@ -61,6 +65,7 @@ class UserServiceImplTest {
         assertEquals(savedUser.getUsername(), result.getUsername());
         
         verify(userRepository, times(1)).existsByEmail(validUserRequest.getEmail());
+        verify(passwordEncoder, times(1)).encode(validUserRequest.getPassword());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -83,11 +88,13 @@ class UserServiceImplTest {
     @Test
     void signUp_ShouldHashPassword() {
         // Arrange
+        String hashedPassword = "$2a$10$hashedPassword";
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(validUserRequest.getPassword())).thenReturn(hashedPassword);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
-            // Verify that password is hashed (BCrypt hashes start with $2a$, $2b$, or $2y$)
-            assertTrue(user.getPassword().startsWith("$2"));
+            // Verify that password is set to hashed value
+            assertEquals(hashedPassword, user.getPassword());
             assertNotEquals(validUserRequest.getPassword(), user.getPassword());
             return savedUser;
         });
@@ -96,6 +103,7 @@ class UserServiceImplTest {
         userService.signUp(validUserRequest);
 
         // Assert
+        verify(passwordEncoder, times(1)).encode(validUserRequest.getPassword());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -103,6 +111,7 @@ class UserServiceImplTest {
     void signUp_ShouldMapAllFieldsCorrectly() {
         // Arrange
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             assertEquals(validUserRequest.getUsername(), user.getUsername());

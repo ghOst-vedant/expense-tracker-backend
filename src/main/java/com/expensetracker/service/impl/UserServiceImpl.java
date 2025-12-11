@@ -20,7 +20,7 @@ public class UserServiceImpl implements IUserService {
 
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDTO signUp(UserRequestDTO userDTO) {
